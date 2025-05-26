@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola User - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelola User</h1>
+    <button onclick="logout()">Logout</button>
+    <hr />
+
+    <form id="user-form">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <select id="role">
+        <option value="admin">Admin</option>
+        <option value="kasir">Kasir</option>
+        <option value="pelanggan">Pelanggan</option>
+      </select>
+      <button type="submit">Tambah User</button>
+    </form>
+
+    <h2>Daftar User</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="user-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const currentRole = localStorage.getItem("role");
+    if (currentRole !== "admin") {
+      alert("Akses ditolak. Hanya Admin yang boleh mengakses halaman ini.");
+      window.location.href = "dashboard.html";
+    }
+
+    const form = document.getElementById("user-form");
+    const userList = document.getElementById("user-list");
+
+    let users = JSON.parse(localStorage.getItem("users")) || [
+      { username: "admin", password: "admin123", role: "admin" },
+      { username: "kasir", password: "kasir123", role: "kasir" }
+    ];
+
+    function renderUsers() {
+      userList.innerHTML = "";
+      users.forEach((user, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${user.username}</td>
+          <td>${user.role}</td>
+          <td><button onclick="deleteUser(${index})">Hapus</button></td>
+        `;
+        userList.appendChild(row);
+      });
+    }
+
+    function deleteUser(index) {
+      if (confirm("Yakin ingin menghapus user ini?")) {
+        users.splice(index, 1);
+        localStorage.setItem("users", JSON.stringify(users));
+        renderUsers();
+      }
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+      users.push({ username, password, role });
+      localStorage.setItem("users", JSON.stringify(users));
+      form.reset();
+      renderUsers();
+    });
+
+    function logout() {
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+
+    renderUsers();
+  </script>
+</body>
+</html>

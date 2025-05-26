@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Login SIM Laundry</h1>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p>Belum punya akun? <a href="register.html">Daftar di sini</a></p>
+  </div>
+
+  <script>
+    const form = document.getElementById("login-form");
+
+    // ✅ Inisialisasi user default jika belum ada
+    if (!localStorage.getItem("users")) {
+      const defaultUsers = [
+        { username: "admin", password: "admin123", role: "admin" },
+        { username: "kasir", password: "kasir123", role: "kasir" },
+        { username: "pelanggan", password: "pelanggan123", role: "pelanggan" }
+      ];
+      localStorage.setItem("users", JSON.stringify(defaultUsers));
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const user = users.find(u => u.username === username && u.password === password);
+
+      if (user) {
+        // ✅ Simpan role dan username untuk digunakan di halaman lain
+        localStorage.setItem("role", user.role);
+        localStorage.setItem("username", user.username);
+        alert("Login berhasil sebagai " + user.role);
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Username atau password salah!");
+      }
+    });
+  </script>
+</body>
+</html>

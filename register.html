@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Akun - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Daftar Akun Pelanggan</h1>
+    <form id="register-form">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Daftar</button>
+    </form>
+    <p>Sudah punya akun? <a href="login.html">Login di sini</a></p>
+  </div>
+
+  <script>
+    const form = document.getElementById("register-form");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+
+      if (users.some(u => u.username === username)) {
+        alert("Username sudah digunakan.");
+        return;
+      }
+
+      users.push({ username, password, role: "pelanggan" });
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Pendaftaran berhasil. Silakan login.");
+      window.location.href = "login.html";
+    });
+  </script>
+</body>
+</html>

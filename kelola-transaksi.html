@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Transaksi - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelola Transaksi</h1>
+    <button onclick="logout()">Logout</button>
+    <hr />
+    <div id="filter-container" style="display: none; margin: 10px 0;">
+      <label for="filterPelanggan">Filter Daftar Pelanggan:</label>
+      <select id="filterPelanggan">
+        <option value="">Semua</option>
+      </select>
+    </div>
+    <form id="transaksi-form">
+      <div id="pelanggan-field">
+         <label for="transaksiPelanggan">transaksi Pelanggan:</label>
+        <select id="pelanggan" required></select>
+      </div>
+      <select id="layanan" required></select>
+      <input type="number" id="harga" placeholder="Harga per kg" readonly />
+      <input type="number" id="berat" placeholder="Berat (kg)" required />
+      <button type="submit">Tambah Transaksi</button>
+    </form>
+    <h2>Daftar Transaksi</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Pelanggan</th>
+          <th>Layanan</th>
+          <th>Berat</th>
+          <th>Harga/kg</th>
+          <th>Total</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="transaksi-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const currentRole = localStorage.getItem("role");
+    const username = localStorage.getItem("username");
+    const isAdminOrKasir = currentRole === "admin" || currentRole === "kasir";
+    const isPelanggan = currentRole === "pelanggan";
+
+    if (!currentRole) {
+      alert("Silakan login terlebih dahulu.");
+      window.location.href = "login.html";
+    }
+
+    const form = document.getElementById("transaksi-form");
+    const transaksiList = document.getElementById("transaksi-list");
+    const pelangganSelect = document.getElementById("pelanggan");
+    const pelangganField = document.getElementById("pelanggan-field");
+    const layananSelect = document.getElementById("layanan");
+    const hargaInput = document.getElementById("harga");
+    const filterContainer = document.getElementById("filter-container");
+    const filterPelanggan = document.getElementById("filterPelanggan");
+
+    let transaksi = JSON.parse(localStorage.getItem("transaksi")) || [];
+    let pelanggan = JSON.parse(localStorage.getItem("pelanggan")) || [];
+    let layananList = JSON.parse(localStorage.getItem("layanan")) || [];
+
+    if (isAdminOrKasir) {
+      pelanggan.forEach(p => {
+        const option1 = document.createElement("option");
+        option1.value = p.nama;
+        option1.textContent = p.nama;
+        pelangganSelect.appendChild(option1);
+
+        const option2 = document.createElement("option");
+        option2.value = p.nama;
+        option2.textContent = p.nama;
+        filterPelanggan.appendChild(option2);
+      });
+
+      filterContainer.style.display = "block";
+      filterPelanggan.addEventListener("change", renderTransaksi);
+    } else {
+      pelangganField.style.display = "none";
+      const option = document.createElement("option");
+      option.value = username;
+      option.textContent = username;
+      pelangganSelect.appendChild(option);
+      pelangganSelect.disabled = true;
+    }
+
+    layananList.forEach(l => {
+      const option = document.createElement("option");
+      option.value = l.nama;
+      option.textContent = `${l.nama} (Rp ${l.harga})`;
+      layananSelect.appendChild(option);
+    });
+
+    function updateHarga() {
+      const selected = layananList.find(l => l.nama === layananSelect.value);
+      hargaInput.value = selected ? selected.harga : "";
+    }
+
+    layananSelect.addEventListener("change", updateHarga);
+
+    function renderTransaksi() {
+      transaksiList.innerHTML = "";
+      const filterNama = isAdminOrKasir ? filterPelanggan.value : null;
+
+      transaksi.forEach((t, index) => {
+        if (t.status === "lunas") return; // Jangan tampilkan transaksi lunas
+        if (isPelanggan && t.pelanggan !== username) return;
+        if (isAdminOrKasir && filterNama && t.pelanggan !== filterNama) return;
+
+        const total = t.berat * t.harga;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${t.pelanggan}</td>
+          <td>${t.layanan}</td>
+          <td>${t.berat} kg</td>
+          <td>Rp ${t.harga}</td>
+          <td>Rp ${total}</td>
+          <td>${isAdminOrKasir ? `<button onclick="deleteTransaksi(${index})">Hapus</button>` : "-"}</td>
+        `;
+        transaksiList.appendChild(row);
+      });
+    }
+
+    function deleteTransaksi(index) {
+      if (confirm("Yakin ingin menghapus transaksi ini?")) {
+        transaksi.splice(index, 1);
+        localStorage.setItem("transaksi", JSON.stringify(transaksi));
+        renderTransaksi();
+      }
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const pelanggan = isPelanggan ? username : pelangganSelect.value;
+      const layanan = layananSelect.value;
+      const harga = parseFloat(hargaInput.value);
+      const berat = parseFloat(document.getElementById("berat").value);
+
+      if (!layanan || isNaN(harga) || isNaN(berat)) {
+        alert("Mohon lengkapi layanan dan berat. Harga akan muncul otomatis setelah memilih layanan.");
+        return;
+      }
+
+      transaksi.push({ pelanggan, layanan, berat, harga, status: "belum" });
+      localStorage.setItem("transaksi", JSON.stringify(transaksi));
+      form.reset();
+      updateHarga();
+      renderTransaksi();
+    });
+
+    function logout() {
+      localStorage.removeItem("role");
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+    }
+
+    updateHarga();
+    renderTransaksi();
+  </script>
+</body>
+</html>

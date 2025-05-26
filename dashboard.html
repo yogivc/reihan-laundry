@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Dashboard SIM Laundry</h1>
+    <p>Halo, <span id="role-name"></span>!</p>
+
+    <div id="admin-menu" style="display: none">
+      <h2>Menu Admin</h2>
+      <ul>
+        <li><a href="kelola-user.html">Kelola User</a></li>
+        <li><a href="kelola-pelanggan.html">Kelola Pelanggan</a></li>
+        <li><a href="kelola-layanan.html">kelola-layanan</a></li>
+        <li><a href="kelola-transaksi.html">Kelola Transaksi</a></li>
+        <li><a href="pembayaran.html">Kelola Pembayaran</a></li>
+        <li><a href="nota.html">Cetak Nota</a></li>
+        <li><a href="laporan.html">Lihat Laporan</a></li>
+      </ul>
+    </div>
+
+    <div id="kasir-menu" style="display: none">
+      <h2>Menu Kasir</h2>
+      <ul>
+        <li><a href="kelola-pelanggan.html">Kelola Pelanggan</a></li>
+        <li><a href="transaksi.html">Kelola Transaksi</a></li>
+        <li><a href="nota.html">Cetak Nota</a></li>
+        <li><a href="laporan.html">Lihat Laporan</a></li>
+      </ul>
+    </div>
+
+    <div id="pelanggan-menu" style="display: none">
+      <h2>Menu Pelanggan</h2>
+      <ul>
+        <li><a href="kelola-transaksi.html">Order Laundry</a></li>
+        <li><a href="pembayaran.html">Kelola Pembayaran Saya</a></li>
+        <li><a href="nota.html">Cetak Nota Saya</a></li>
+        <li><a href="laporan.html">Lihat Laporan Saya</a></li>
+      </ul>
+    </div>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const role = localStorage.getItem("role");
+
+    if (!role) {
+      alert("Silakan login terlebih dahulu.");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("role-name").textContent = role;
+
+      if (role === "admin") {
+        document.getElementById("admin-menu").style.display = "block";
+      } else if (role === "kasir") {
+        document.getElementById("kasir-menu").style.display = "block";
+      } else if (role === "pelanggan") {
+        document.getElementById("pelanggan-menu").style.display = "block";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

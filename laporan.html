@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laporan Transaksi - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Laporan Transaksi</h1>
+    <button onclick="logout()">Logout</button>
+    <hr />
+
+    <div id="filter-container" style="display: none;">
+      <label for="filterPelanggan">Filter berdasarkan Pelanggan:</label>
+      <select id="filterPelanggan">
+        <option value="">Semua</option>
+      </select>
+    </div>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Pelanggan</th>
+          <th>Layanan</th>
+          <th>Berat (kg)</th>
+          <th>Harga/kg</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="laporanBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("Silakan login terlebih dahulu.");
+      window.location.href = "login.html";
+    }
+
+    const laporanBody = document.getElementById("laporanBody");
+    const filterPelanggan = document.getElementById("filterPelanggan");
+    const filterContainer = document.getElementById("filter-container");
+
+    const transaksi = JSON.parse(localStorage.getItem("transaksi")) || [];
+    const pelanggan = JSON.parse(localStorage.getItem("pelanggan")) || [];
+
+    function renderLaporan(filter = "") {
+      laporanBody.innerHTML = "";
+      transaksi.forEach(t => {
+        if (filter && t.pelanggan !== filter) return;
+        const row = document.createElement("tr");
+        const total = t.berat * t.harga;
+        row.innerHTML = `
+          <td>${t.pelanggan}</td>
+          <td>${t.layanan}</td>
+          <td>${t.berat}</td>
+          <td>Rp ${t.harga}</td>
+          <td>Rp ${total}</td>
+        `;
+        laporanBody.appendChild(row);
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+
+    if (role === "admin" || role === "kasir") {
+      filterContainer.style.display = "block";
+      pelanggan.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.nama;
+        option.textContent = p.nama;
+        filterPelanggan.appendChild(option);
+      });
+
+      filterPelanggan.addEventListener("change", () => {
+        renderLaporan(filterPelanggan.value);
+      });
+
+      renderLaporan();
+    } else if (role === "pelanggan") {
+      // Otomatis filter berdasarkan nama pengguna
+      renderLaporan(localStorage.getItem("username"));
+    }
+  </script>
+</body>
+</html>

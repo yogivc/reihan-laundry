@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Pembayaran - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelola Pembayaran</h1>
+    <button onclick="logout()">Logout</button>
+    <hr />
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Pelanggan</th>
+          <th>Layanan</th>
+          <th>Berat</th>
+          <th>Harga/kg</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="pembayaranBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (!role) {
+      alert("Akses ditolak.");
+      window.location.href = "dashboard.html";
+    }
+
+    const pembayaranBody = document.getElementById("pembayaranBody");
+const username = localStorage.getItem("username");
+const isAdminOrKasir = (role === "admin" || role === "kasir");
+    let transaksi = JSON.parse(localStorage.getItem("transaksi")) || [];
+
+    function renderPembayaran() {
+      pembayaranBody.innerHTML = "";
+      transaksi.forEach((t, index) => {
+  if (role === "pelanggan" && t.pelanggan !== username) return;
+        const total = t.berat * t.harga;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${t.pelanggan}</td>
+          <td>${t.layanan}</td>
+          <td>${t.berat} kg</td>
+          <td>Rp ${t.harga}</td>
+          <td>Rp ${total}</td>
+          <td>${t.status === "lunas" ? "Lunas" : "Belum Lunas"}</td>
+          <td>
+            ${isAdminOrKasir && t.status !== "lunas" ? `<button onclick="tandaiLunas(${index})">Tandai Lunas</button>` : "-"}
+          </td>
+        `;
+        pembayaranBody.appendChild(row);
+      });
+    }
+
+    function tandaiLunas(index) {
+      if (confirm("Tandai transaksi ini sebagai lunas?")) {
+        transaksi[index].status = "lunas";
+        localStorage.setItem("transaksi", JSON.stringify(transaksi));
+        renderPembayaran();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+
+    // Pastikan status terdefinisi
+    transaksi = transaksi.map(t => ({ ...t, status: t.status || "belum" }));
+    localStorage.setItem("transaksi", JSON.stringify(transaksi));
+    renderPembayaran();
+  </script>
+</body>
+</html>

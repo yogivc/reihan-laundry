@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Pelanggan - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelola Pelanggan</h1>
+    <button onclick="logout()">Logout</button>
+    <hr />
+
+    <form id="pelanggan-form">
+      <input type="text" id="nama" placeholder="Nama Pelanggan" required />
+      <input type="text" id="telepon" placeholder="No. Telepon" required />
+      <input type="text" id="alamat" placeholder="Alamat" required />
+      <button type="submit">Tambah Pelanggan</button>
+    </form>
+
+    <h2>Daftar Pelanggan</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Telepon</th>
+          <th>Alamat</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="pelanggan-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const currentRole = localStorage.getItem("role");
+    if (!currentRole || (currentRole !== "admin" && currentRole !== "kasir")) {
+      alert("Akses ditolak. Halaman ini hanya untuk Admin atau Kasir.");
+      window.location.href = "dashboard.html";
+    }
+
+    const form = document.getElementById("pelanggan-form");
+    const pelangganList = document.getElementById("pelanggan-list");
+
+    let pelanggan = JSON.parse(localStorage.getItem("pelanggan")) || [];
+
+    function renderPelanggan() {
+      pelangganList.innerHTML = "";
+      pelanggan.forEach((p, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${p.nama}</td>
+          <td>${p.telepon}</td>
+          <td>${p.alamat}</td>
+          <td><button onclick="deletePelanggan(${index})">Hapus</button></td>
+        `;
+        pelangganList.appendChild(row);
+      });
+    }
+
+    function deletePelanggan(index) {
+      if (confirm("Yakin ingin menghapus pelanggan ini?")) {
+        pelanggan.splice(index, 1);
+        localStorage.setItem("pelanggan", JSON.stringify(pelanggan));
+        renderPelanggan();
+      }
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nama = document.getElementById("nama").value;
+      const telepon = document.getElementById("telepon").value;
+      const alamat = document.getElementById("alamat").value;
+      pelanggan.push({ nama, telepon, alamat });
+      localStorage.setItem("pelanggan", JSON.stringify(pelanggan));
+      form.reset();
+      renderPelanggan();
+    });
+
+    function logout() {
+      localStorage.removeItem("role");
+      window.location.href = "login.html";
+    }
+
+    renderPelanggan();
+  </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola Layanan - SIM Laundry</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="main.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kelola Jenis Layanan</h1>
+    <button onclick="logout()">Logout</button>
+    <hr/>
+
+    <form id="layanan-form">
+      <input type="text" id="nama-layanan" placeholder="Nama Layanan" required />
+      <input type="number" id="harga-layanan" placeholder="Harga per kg" required />
+      <button type="submit">Tambah Layanan</button>
+    </form>
+
+    <h2>Daftar Layanan</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nama Layanan</th>
+          <th>Harga per kg</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="layanan-list"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const role = localStorage.getItem("role");
+    if (role !== "admin") {
+      alert("Akses ditolak. Halaman ini hanya untuk Admin.");
+      window.location.href = "dashboard.html";
+    }
+
+    const layananForm = document.getElementById("layanan-form");
+    const layananList = document.getElementById("layanan-list");
+    let layanan = JSON.parse(localStorage.getItem("layanan")) || [];
+
+    function renderLayanan() {
+      layananList.innerHTML = "";
+      layanan.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.nama}</td>
+          <td>Rp ${item.harga}</td>
+          <td><button onclick="hapusLayanan(${index})">Hapus</button></td>
+        `;
+        layananList.appendChild(row);
+      });
+    }
+
+    layananForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nama = document.getElementById("nama-layanan").value;
+      const harga = parseInt(document.getElementById("harga-layanan").value);
+      layanan.push({ nama, harga });
+      localStorage.setItem("layanan", JSON.stringify(layanan));
+      layananForm.reset();
+      renderLayanan();
+    });
+
+    function hapusLayanan(index) {
+      if (confirm("Hapus layanan ini?")) {
+        layanan.splice(index, 1);
+        localStorage.setItem("layanan", JSON.stringify(layanan));
+        renderLayanan();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("role");
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+    }
+
+    renderLayanan();
+  </script>
+</body>
+</html>
